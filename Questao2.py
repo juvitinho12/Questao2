@@ -18,6 +18,27 @@ def dAPUE(x_coord, y_coord, K): #K é o número de UEs
     dAPUE[i] = np.linalg.norm(np.array([x_coord[i], y_coord[i]]) - np.array([500,500]))
   return dAPUE
 
+def canal_UE(K, N):
+    UE = np.zeros(K)
+
+    if K == N:
+        # Quando o número de canal é igual ao número de UE
+        for i in range(N):
+            UE[i] = i
+    elif K < N:
+        # Quando eu tenho mais canal do que UE
+        for i in range(K):
+            UE[i] = i
+    else:
+        # Quando eu tenho mais UE do que canal
+        for i in range(K):
+            if i < N:
+                UE[i] = i
+            else:
+                UE[i] = np.random.randint(0, N)
+                
+
+    return UE
 
 def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
     x_coord = np.zeros(K)
@@ -34,7 +55,8 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
         distanciaAPUE[i] = dAPUE(x_coord[i], y_coord[i], K)
         potencia_recebida[i] = pot_rec(p_t, distanciaAPUE[i], d_0)
     
-
+    #Definindo em qual canal da UE está alocada:
+    
 
     B_c = B_t / N
     Capacidade = np.zeros(K)
