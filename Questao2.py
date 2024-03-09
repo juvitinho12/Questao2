@@ -12,11 +12,14 @@ def pot_rec(pot_trans, dist, d_0):
 
     return pot_rec_result
 
-def dAPUE(x_coord, y_coord, K): #K é o número de UEs
-  dAPUE = np.array(K)
-  for i in range(K):
-    dAPUE[i] = np.linalg.norm(np.array([x_coord[i], y_coord[i]]) - np.array([500,500]))
-  return dAPUE
+def dAPUE(x_coord, y_coord, K):
+    dAPUE = np.zeros(K)
+    AP_pos = np.array([500, 500])
+    for i in range(K):
+        dAPUE[i] = np.linalg.norm(np.array([x_coord[i], y_coord[i]]) - AP_pos)
+    return dAPUE
+
+
 
 def canal_UE(K, N):
     UE = np.zeros(K)
@@ -46,40 +49,45 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
     distanciaAPUE = np.zeros(K)
     potencia_recebida = np.zeros(K)
     p_n = K_0 * (B_t / N)
-    SNR = []
-    SINR = []
+    SNR_SINR = np.zeros(K)
+    #Definindo em qual canal da UE está alocada:
+    Canal_UE = canal_UE(K, N)
+    B_c = B_t / N
+    Capacidade = np.zeros(K)
 
     for i in range(K):
         x_coord[i] = random.random() * 1000
         y_coord[i] = random.random() * 1000
-        distanciaAPUE[i] = dAPUE(x_coord[i], y_coord[i], K)
+        distanciaAPUE[i] = dAPUE(x_coord, y_coord, K)[i]
         potencia_recebida[i] = pot_rec(p_t, distanciaAPUE[i], d_0)
-    
-    #Definindo em qual canal da UE está alocada:
-    
-
-    B_c = B_t / N
-    Capacidade = np.zeros(K)
-
-    #Penso em fazer a condicional de ser cálculo de SNR ou SINR no mesmo laço for, assim com isso eu posso colocar quando o valor for igual a 0 ser nulo, para que assim eu junte os vetores num só para melhor cálculo da SINR
-    SNR_SINR = np.concatenate((SNR, SINR))
+       
     for i in range(K):
-      Capacidade[i] = B_c * np.log2(1+SNR_SINR)
+        # Criar lista de índices de outros equipamentos no mesmo canal
+        outros_no_mesmo_canal = [n for n in range(K) if Canal_UE[n] == Canal_UE[i] and n != i]
 
-    return Capacidade
-'''Cálculo da SINR em laço for:
+        # Calcular interferência apenas para os equipamentos no mesmo canal
+        interferencia = np.sum([potencia_recebida[n] for n in outros_no_mesmo_canal])
+        
+        # Calcular SINR apenas se houver interferência
+        if interferencia > 0:
             outras_estacoes = np.delete(potencia_recebida, i)
             interferencia = np.sum(outras_estacoes)
-            SINR[i] = potencia_recebida[i] / (interferencia + p_n)'''
+            SNR_SINR[i] = potencia_recebida[i] / (interferencia + p_n)
+        else:
+            SNR_SINR[i] = potencia_recebida[i]/p_n
 
+        # Calcular a capacidade
+        Capacidade[i] = B_c * np.log2(1 + SNR_SINR[i])
+        
 
+    return Capacidade
 
 ########################################################################################################################################
 B_t, p_t, d_0, K_0 = 100e6, 1e3, 1, 1e-17 # Em MHz, mW, metros, mW/Hz respectivamente
-M, K, N = 1, 10, 9 #Número de APs, UEs e Canais respectivamente
+M, K, N = 1, 15, 9 #Número de APs, UEs e Canais respectivamente
 
 # Número de iterações
-num_iteracoes = 1000
+num_iteracoes = 8000
 
 # Armazenar todas as capacidades
 Capacidade_total = []
