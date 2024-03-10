@@ -50,10 +50,13 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
     potencia_recebida = np.zeros(K)
     p_n = K_0 * (B_t / N)
     SNR_SINR = np.zeros(K)
+    Canal_UE = np.zeros(K)
     #Definindo em qual canal da UE está alocada:
-    Canal_UE = canal_UE(K, N)
+    for i in range(K):
+        Canal_UE[i] = canal_UE(K, N)[i]
     B_c = B_t / N
     Capacidade = np.zeros(K)
+    Capacidade_db = np.zeros(K)
 
     for i in range(K):
         x_coord[i] = random.random() * 1000
@@ -62,32 +65,29 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
         potencia_recebida[i] = pot_rec(p_t, distanciaAPUE[i], d_0)
        
     for i in range(K):
-        # Criar lista de índices de outros equipamentos no mesmo canal
-        outros_no_mesmo_canal = [n for n in range(K) if Canal_UE[n] == Canal_UE[i] and n != i]
+        for n in range(K):
+            if Canal_UE[n] == Canal_UE[i] and n != i:
+                outras_estacoes = np.delete(potencia_recebida, i)
+                interferencia_do_canal = np.sum(outras_estacoes)
+                SNR_SINR[i] = potencia_recebida[i] / (interferencia_do_canal + p_n)
 
-        # Calcular interferência apenas para os equipamentos no mesmo canal
-        interferencia = np.sum([potencia_recebida[n] for n in outros_no_mesmo_canal])
-        
-        # Calcular SINR apenas se houver interferência
-        if interferencia > 0:
-            outras_estacoes = np.delete(potencia_recebida, i)
-            interferencia = np.sum(outras_estacoes)
-            SNR_SINR[i] = potencia_recebida[i] / (interferencia + p_n)
-        else:
-            SNR_SINR[i] = potencia_recebida[i]/p_n
+            else:
+                SNR_SINR[i] = potencia_recebida[i]/p_n
 
         # Calcular a capacidade
         Capacidade[i] = B_c * np.log2(1 + SNR_SINR[i])
+        Capacidade_db[i] = 10*np.log10(Capacidade[i]) 
+
         
 
     return Capacidade
 
 ########################################################################################################################################
 B_t, p_t, d_0, K_0 = 100e6, 1e3, 1, 1e-17 # Em MHz, mW, metros, mW/Hz respectivamente
-M, K, N = 1, 15, 9 #Número de APs, UEs e Canais respectivamente
+M, K, N = 1, 15, 10 #Número de APs, UEs e Canais respectivamente
 
 # Número de iterações
-num_iteracoes = 8000
+num_iteracoes = 3000
 
 # Armazenar todas as capacidades
 Capacidade_total = []
