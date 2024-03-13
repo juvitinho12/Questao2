@@ -84,26 +84,54 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
 
 ########################################################################################################################################
 B_t, p_t, d_0, K_0 = 100e6, 1e3, 1, 1e-17 # Em MHz, mW, metros, mW/Hz respectivamente
-M, K, N = 1, 15, 10 #Número de APs, UEs e Canais respectivamente
+M, K1, N1 = 1, 1, 1 #Número de APs, UEs e Canais respectivamente
+K2, N2, K3, N3, K4, N4 = 1, 5, 60, 30, 16, 20
 
 # Número de iterações
-num_iteracoes = 3000
+num_iteracoes1 = 60000
+num_iteracoes2 = 60000
+num_iteracoes3 = 1000
+num_iteracoes4 = 3750
+
 
 # Armazenar todas as capacidades
-Capacidade_total = []
+Capacidade_total1 = []
+Capacidade_total2 = []
+Capacidade_total3 = []
+Capacidade_total4 = []
 
 # Iteração
-for i in range(num_iteracoes):
-    Capacidade_iteracao = simular_experimento(B_t, p_t, d_0, K_0, M, N, K)
-    Capacidade_total = np.concatenate((Capacidade_total, Capacidade_iteracao))
+for i in range(num_iteracoes1):
+    Capacidade_iteracao1 = simular_experimento(B_t, p_t, d_0, K_0, M, N1, K1)
+    Capacidade_total1 = np.concatenate((Capacidade_total1, Capacidade_iteracao1))
+
+for i in range(num_iteracoes2):
+    Capacidade_iteracao2 = simular_experimento(B_t, p_t, d_0, K_0, M, N2, K2)
+    Capacidade_total2 = np.concatenate((Capacidade_total2, Capacidade_iteracao2))
+
+for i in range(num_iteracoes3):
+    Capacidade_iteracao3 = simular_experimento(B_t, p_t, d_0, K_0, M, N3, K3)
+    Capacidade_total3 = np.concatenate((Capacidade_total3, Capacidade_iteracao3))
+
+for i in range(num_iteracoes4):
+    Capacidade_iteracao4 = simular_experimento(B_t, p_t, d_0, K_0, M, N4, K4)
+    Capacidade_total4 = np.concatenate((Capacidade_total4, Capacidade_iteracao4))
 
 #Deixando em ordem crescente
-x = np.sort(Capacidade_total)
+x1 = np.sort(Capacidade_total1)
+x2 = np.sort(Capacidade_total2)
+x3 = np.sort(Capacidade_total3)
+x4 = np.sort(Capacidade_total4)
+
+plt.plot(x1, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '1 AP')
+plt.plot(x2, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '9 APs')
+plt.plot(x3, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '25 APs')
+plt.plot(x4, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '64 APs')
+plt.legend()
+
 
 # Plotar apenas o eixo x em decibéis
 plt.xlabel('Capacidade')
 plt.ylabel('Porcentagem')
 plt.title('CDF da Capacidade')
-
-plt.plot(x, np.arange(0, len(Capacidade_total)) / len(Capacidade_total))
 plt.show()
