@@ -76,8 +76,6 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
 
         # Calcular a capacidade
         Capacidade[i] = B_c * np.log2(1 + SNR_SINR[i])
-        Capacidade_db[i] = 10*np.log10(Capacidade[i]) 
-
         
 
     return Capacidade
@@ -85,13 +83,15 @@ def simular_experimento(B_t, p_t, d_0, K_0, M, N, K):
 ########################################################################################################################################
 B_t, p_t, d_0, K_0 = 100e6, 1e3, 1, 1e-17 # Em MHz, mW, metros, mW/Hz respectivamente
 M, K1, N1 = 1, 1, 1 #Número de APs, UEs e Canais respectivamente
-K2, N2, K3, N3, K4, N4 = 1, 5, 60, 30, 16, 20
+K2, N2, K3, N3, K4, N4, K5, N5 = 1, 5, 60, 30, 16, 20, 100, 40
+
 
 # Número de iterações
 num_iteracoes1 = 60000
 num_iteracoes2 = 60000
 num_iteracoes3 = 1000
 num_iteracoes4 = 3750
+num_iteracoes5 = 600
 
 
 # Armazenar todas as capacidades
@@ -99,6 +99,7 @@ Capacidade_total1 = []
 Capacidade_total2 = []
 Capacidade_total3 = []
 Capacidade_total4 = []
+Capacidade_total5 = []
 
 # Iteração
 for i in range(num_iteracoes1):
@@ -109,7 +110,7 @@ for i in range(num_iteracoes2):
     Capacidade_iteracao2 = simular_experimento(B_t, p_t, d_0, K_0, M, N2, K2)
     Capacidade_total2 = np.concatenate((Capacidade_total2, Capacidade_iteracao2))
 
-for i in range(num_iteracoes3):
+for i in range(num_iteracoes3):   
     Capacidade_iteracao3 = simular_experimento(B_t, p_t, d_0, K_0, M, N3, K3)
     Capacidade_total3 = np.concatenate((Capacidade_total3, Capacidade_iteracao3))
 
@@ -117,16 +118,22 @@ for i in range(num_iteracoes4):
     Capacidade_iteracao4 = simular_experimento(B_t, p_t, d_0, K_0, M, N4, K4)
     Capacidade_total4 = np.concatenate((Capacidade_total4, Capacidade_iteracao4))
 
+for i in range(num_iteracoes5):
+    Capacidade_iteracao5 = simular_experimento(B_t, p_t, d_0, K_0, M, N5, K5)
+    Capacidade_total5 = np.concatenate((Capacidade_total5, Capacidade_iteracao5))
+
 #Deixando em ordem crescente
 x1 = np.sort(Capacidade_total1)
 x2 = np.sort(Capacidade_total2)
 x3 = np.sort(Capacidade_total3)
 x4 = np.sort(Capacidade_total4)
+x5 = np.sort(Capacidade_total5)
 
-plt.plot(x1, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '1 AP')
-plt.plot(x2, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '9 APs')
-plt.plot(x3, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '25 APs')
-plt.plot(x4, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '64 APs')
+plt.plot(x1, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '1 UE e 1 Canal')
+plt.plot(x2, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '1 UE e 5 Canais')
+plt.plot(x3, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '60 UEs e 30 Canais')
+plt.plot(x4, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '16 UEs e 20 Canais')
+plt.plot(x5, np.arange(0, len(Capacidade_total1)) / len(Capacidade_total1), label = '100 UEs e 40 Canais')
 plt.legend()
 
 
